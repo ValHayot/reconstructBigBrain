@@ -138,7 +138,6 @@ def reconstruct(legend_fn, reconstructed_fn, block_folder, block_prefix, block_s
     print('Reconstructing with dimensions: ', bb_ydim, bb_zdim, bb_xdim)
     first_block = get_minc_data(get_block_fn_from_id(legend[0,0,0], block_folder, block_prefix, block_suffix))
 
-    print(reconstructed_fn)
     with open(reconstructed_fn, "r+b") as reconstructed:
         for x in range(0, legend.shape[2]):
             for z in range(0, legend.shape[1]):
@@ -159,9 +158,8 @@ def reconstruct(legend_fn, reconstructed_fn, block_folder, block_prefix, block_s
                     zdim = shape[1]
                     xdim = shape[2]
 
-                    block_data = block_img.get_data().astype(dtype)#convertDataToNdArray(minc_data,ydim, zdim, xdim, np.ushort)#block_img.get_data()
+                    block_data = block_img.get_data().astype(dtype)
                     
-                    print(block_data.shape)        
                     minc_block = get_minc_data(block_filename)
                     
                     y_block = int(get_distance(first_block, minc_block, 0) - ydim)
@@ -171,42 +169,15 @@ def reconstruct(legend_fn, reconstructed_fn, block_folder, block_prefix, block_s
                     print('Writing block :', legend[y, z, x], ', Shape: ', ydim, zdim, xdim)
                     print('Start of block :', y_block, z_block, x_block)
 
-                    '''for i in range(0, ydim):
-                        if int(block_num[-1]) == 2:
-                            reconstructed.write(block_data[i][:,:].tobytes())
-                        if int(block_num[-1]) > 2: 
-                            sys.exit(1)
-                        reconstructed.seek(header_size + bytes_per_voxel*(y_block+i + (z_block + i)*bb_ydim +(x_block)*bb_ydim*bb_zdim), 0)'''
-
+                    # Write to file
                     t=time()
                     for i in range(0,xdim):
-                        #if i > 0:
-                        #    break
                         for j in range(0, zdim):
-                            #if int(block_num[-1]) == 1 or int(block_num[-1]) == 2:
-                            #if j > 0:
-                            #    break
-                            #if legend[y, z, x] not in [1, 6, 11, 16, 21]:
-                            #    sys.exit(1)
-                            #if int(block_num[-2:]) > 10: 
-                                #sys.exit(1)
-                            reconstructed.seek(header_size + bytes_per_voxel*(y_block + (z_block + j)*bb_ydim +(x_block + i)*bb_ydim*bb_zdim), 0)
-                            #print(int(header_size) + bytes_per_voxel*(y_block + (z_block + j)*bb_ydim +(x_block + i)*bb_ydim*bb_zdim))
-        #                    print "seek",time()-t
-         #                   print "size",len(block_data[:, j,i].tobytes())
+                            reconstructed.seek(header_size + bytes_per_voxel*(
+                                y_block + (z_block + j)*bb_ydim +(x_block + i)*bb_ydim*bb_zdim), 0)
                             reconstructed.write(block_data[:,j,i].tobytes())
 
-                            #if not np.array_equal(recon.dataobj[y_block: y_block + ydim, z_block+j, x_block+i], block_data[:, j, i]):
-                            #    print("data mismatch")
-                            #    print(recon.dataobj[y_block: y_block + ydim, z_block+j, x_block+i])
-                            #    print(block_data[:,j,i])
-                            #    sys.exit(1)
-                            
-                            #print(block_data[:, j,i])
-                            #reconstructed.write(np.asarray([random]).tobytes())
-                            
-                            #reconstructed.write(block_data[:, j,i].tobytes())
-                    print(time()-t)
+                    print(block_filename, "\t\t\tWrite time: "time()-t)
                      
 
 if __name__ == "__main__":
