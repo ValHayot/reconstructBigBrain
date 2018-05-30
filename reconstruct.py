@@ -183,7 +183,7 @@ def reconstruct(legend_fn, reconstructed_fn, block_folder, block_prefix, block_s
 if __name__ == "__main__":
 
 
-    #sample command: python reconstruct_bb.py legend1000_1.mnc recon.nii ../blocks/ block40 inv.mnc np.ushort
+    # sample command: python reconstruct.py legend1000.mnc recon.nii ../blocks/ block40 inv.mnc np.ushort
    
     parser = argparse.ArgumentParser(description='Reconstruct a nifti image given blocks and a legend')
     parser.add_argument('legend', type=str, help='The legend image to be used for reconstruction')
