@@ -117,6 +117,10 @@ def create_header(legend, block_folder, filename, block_prefix, block_suffix):
     max_x = max(map(lambda x: get_distance(x[0], x[1], 2), x_blocks))
     print("Actual reconstructed image's actual dimensions: ",
           max_y, max_z, max_x)
+
+    # Removed padding for now
+
+    '''
     print("Zero padding to ensure image can be broken down "
           "into even-sized blocks...")
 
@@ -125,6 +129,11 @@ def create_header(legend, block_folder, filename, block_prefix, block_suffix):
     x_dim = int(max_x + 5 - (max_z % 5))
 
     print("Padded image dimensions", y_dim, z_dim, x_dim)
+    '''
+    y_dim = max_y
+    z_dim = max_z
+    x_dim = max_x
+
     print("Image will be able to be deconstructed into blocks of size",
           y_dim / 5, z_dim / 5, x_dim / 5)
 
