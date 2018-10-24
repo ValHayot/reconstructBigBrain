@@ -118,24 +118,22 @@ def create_header(legend, block_folder, filename, block_prefix, block_suffix):
     print("Actual reconstructed image's actual dimensions: ",
           max_y, max_z, max_x)
 
-    # Removed padding for now
+    # Forced padding to enable 5x5x5 blocks
+    # TODO: improve flexibility with padding
 
-    '''
+    pad_mul = 5
+
     print("Zero padding to ensure image can be broken down "
           "into even-sized blocks...")
 
-    y_dim = int(max_y + 5 - (max_y % 5))
-    z_dim = int(max_z + 5 - (max_z % 5))
-    x_dim = int(max_x + 5 - (max_z % 5))
+    y_dim = int(max_y + pad_mul - (max_y % pad_mul))
+    z_dim = int(max_z + pad_mul - (max_z % pad_mul))
+    x_dim = int(max_x + pad_mul - (max_x % pad_mul))
 
     print("Padded image dimensions", y_dim, z_dim, x_dim)
-    '''
-    y_dim = max_y
-    z_dim = max_z
-    x_dim = max_x
 
     print("Image will be able to be deconstructed into blocks of size",
-          y_dim / 5, z_dim / 5, x_dim / 5)
+          y_dim / pad_mul, z_dim / pad_mul, x_dim / pad_mul)
 
     first_block = nib.load(get_block_fn_from_id(legend[0, 0, 0], block_folder))
 
@@ -163,12 +161,11 @@ def reconstruct(legend_fn, reconstructed_fn, block_folder, block_prefix,
     header_size, bb_dim = create_header(legend, block_folder, reconstructed_fn,
                                         block_prefix, block_suffix)
 
-    recon = nib.load(reconstructed_fn)
     blocks_copied = {}
 
-    bb_ydim = bb_dim[0]
-    bb_zdim = bb_dim[1]
-    bb_xdim = bb_dim[2]
+    bb_ydim = int(bb_dim[0])
+    bb_zdim = int(bb_dim[1])
+    bb_xdim = int(bb_dim[2])
 
     print('Reconstructing with dimensions: ', bb_ydim, bb_zdim, bb_xdim)
     first_block = get_minc_data(
@@ -229,7 +226,20 @@ def reconstruct(legend_fn, reconstructed_fn, block_folder, block_prefix,
                                 (x_block + i)*bb_ydim*bb_zdim), 0)
                             reconstructed.write(block_data[:, j, i].tobytes())
 
-                    print(block_filename, "\t\t\tWrite time: "time()-t)
+                    print(block_filename, "\t\t\tWrite time: ", time()-t)
+
+        expected_bytes = header_size + bytes_per_voxel * (bb_ydim * bb_zdim *
+                                                          bb_xdim)
+
+        remainder_padding = expected_bytes - reconstructed.tell()
+
+        if remainder_padding > 0:
+            print('Number of bytes remaining ', remainder_padding)
+            print('Adding some final padding...')
+            zero_pad = np.zeros(int(remainder_padding / 2),
+                                dtype=np.ushort, order='F')
+
+            reconstructed.write(zero_pad.tobytes())
 
 
 if __name__ == "__main__":
