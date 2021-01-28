@@ -24,47 +24,48 @@ def get_distance(block_1, block_2, dimension):
     dimensions1 = block_1[1]['dimensions']
 
     # voxel_dim @ 0, step @ 10, world @ 11
-    dims1 = [list(dimensions1[s].attrs.items()) for s in dim1_names]
+    dims1 = [dict(dimensions1[s].attrs.items()) for s in dim1_names]
 
     dim2_names = block_2[0].attrs['dimorder'].decode("utf-8").split(',')
     dimensions2 = block_2[1]['dimensions']
 
-    dims2 = [list(dimensions2[s].attrs.items()) for s in dim2_names]
+    dims2 = [dict(dimensions2[s].attrs.items()) for s in dim2_names]
 
     if dimension == 0:
-        y1dim = dims1[0][0][1]
-        y1start = dims1[0][12][1]
-        y1step = dims1[0][11][1]
+        y1dim = dims1[0]['length']
+        y1start = dims1[0]['start']
+        y1step = dims1[0]['step']
 
-        y2dim = dims2[0][0][1]
-        y2start = dims2[0][12][1]
-        y2step = dims2[0][11][1]
+        y2dim = dims2[0]['length']
+        y2start = dims2[0]['start']
+        y2step = dims2[0]['step']
+
 
         assert y1step == y2step
 
         return abs(y1start - y2start)/y2step + y2dim
 
     elif dimension == 1:
-        z1dim = dims1[1][0][1]
-        z1start = dims1[1][11][1]
-        z1step = dims1[1][10][1]
+        z1dim = dims1[1]['length']
+        z1start = dims1[1]['start']
+        z1step = dims1[1]['step']
 
-        z2dim = dims2[1][0][1]
-        z2start = dims2[1][11][1]
-        z2step = dims2[1][10][1]
+        z2dim = dims2[1]['length']
+        z2start = dims2[1]['start']
+        z2step = dims2[1]['step']
 
         assert z1step == z2step
 
         return abs(z1start - z2start)/z2step + z2dim
 
     elif dimension == 2:
-        x1dim = dims1[2][0][1]
-        x1start = dims1[2][11][1]
-        x1step = dims1[2][10][1]
+        x1dim = dims1[2]['length']
+        x1start = dims1[2]['start']
+        x1step = dims1[2]['step']
 
-        x2dim = dims2[2][0][1]
-        x2start = dims2[2][11][1]
-        x2step = dims2[2][10][1]
+        x2dim = dims2[2]['length']
+        x2start = dims2[2]['start']
+        x2step = dims2[2]['step']
 
         assert x1step == x2step
 
@@ -74,8 +75,12 @@ def get_distance(block_1, block_2, dimension):
 def get_block_fn_from_id(block_id, block_folder, block_prefix="block40",
                          block_suffix="inv.mnc"):
 
-    filename = "{0}-{1}-{2}" \
-               .format(block_prefix, str(block_id).zfill(4), block_suffix)
+    if block_suffix == ".mnc":
+        filename = "{0}-{1}{2}" \
+                   .format(block_prefix, str(block_id).zfill(4), block_suffix)
+    else:
+        filename = "{0}-{1}-{2}" \
+                   .format(block_prefix, str(block_id).zfill(4), block_suffix)
     return os.path.join(block_folder, filename)
 
 
@@ -135,7 +140,7 @@ def create_header(legend, block_folder, filename, block_prefix, block_suffix):
     print("Image will be able to be deconstructed into blocks of size",
           y_dim / pad_mul, z_dim / pad_mul, x_dim / pad_mul)
 
-    first_block = nib.load(get_block_fn_from_id(legend[0, 0, 0], block_folder))
+    first_block = nib.load(get_block_fn_from_id(legend[0, 0, 0], block_folder, block_prefix, block_suffix))
 
     # TODO: improve header
     reconstructed_hdr = nib.Nifti1Header.from_header(first_block.header)
